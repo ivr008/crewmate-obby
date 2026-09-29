@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Among Blocks — Crewmates × Blocks Obby Adventure!</title>
+<meta name="description" content="A super fun fan mashup of Among Us and Roblox for kids: pick your crewmate, find the impostor, do your tasks and beat the blocky obby!" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%BE%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --space1:#1b1035; --space2:#2a1156; --space3:#0d0b22;
+    --cream:#fff7ea; --ink:#241a3a; --muted:#6b5e86;
+    --pink:#ff5aa5; --blue:#3aa0ff; --green:#2fd36b; --yellow:#ffd23f;
+    --orange:#ff8a3d; --purple:#8a5cff; --red:#ff4d4d;
+    --blocky-blue:#2f6fd0; --blocky-green:#3fae4a; --blocky-yellow:#f5d33f;
+    --card:#ffffff; --shadow:0 12px 0 rgba(0,0,0,.18);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; color:var(--ink);
+    font-family:"Nunito",-apple-system,system-ui,"Segoe UI",sans-serif;
+    background:
+      radial-gradient(2px 2px at 20% 30%, #fff 40%, transparent 41%),
+      radial-gradient(2px 2px at 70% 18%, #fff 40%, transparent 41%),
+      radial-gradient(1.5px 1.5px at 42% 62%, #fff 40%, transparent 41%),
+      radial-gradient(2px 2px at 86% 72%, #fff 40%, transparent 41%),
+      radial-gradient(1.5px 1.5px at 10% 80%, #fff 40%, transparent 41%),
+      radial-gradient(1.5px 1.5px at 55% 88%, #fff 40%, transparent 41%),
+      linear-gradient(180deg, var(--space1), var(--space2) 55%, var(--space3));
+    background-attachment:fixed;
+  }
+  h1,h2,h3{font-family:"Fredoka",sans-serif;margin:0;letter-spacing:.3px}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+  .btn{
+    font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.02rem;
+    border:0;border-radius:999px;padding:.7rem 1.4rem;cursor:pointer;
+    background:var(--yellow);color:#3a2a00;box-shadow:0 6px 0 #d9a900;transition:transform .08s, box-shadow .08s;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #d9a900}
+  .btn.pink{background:var(--pink);color:#fff;box-shadow:0 6px 0 #c62e77}
+  .btn.blue{background:var(--blue);color:#fff;box-shadow:0 6px 0 #1f74c7}
+  .btn.green{background:var(--green);color:#063d1c;box-shadow:0 6px 0 #1ba24e}
+  .btn.big{font-size:1.2rem;padding:.9rem 1.8rem}
+  .pill{display:inline-block;background:rgba(255,255,255,.14);border:2px dashed rgba(255,255,255,.4);
+    color:#fff;font-weight:800;font-size:.8rem;letter-spacing:1px;text-transform:uppercase;
+    padding:.35rem .8rem;border-radius:999px}
+
+  /* ---------- top bar ---------- */
+  nav.top{position:sticky;top:0;z-index:40;background:rgba(20,12,42,.75);backdrop-filter:blur(10px);
+    border-bottom:3px solid rgba(255,255,255,.12)}
+  nav.top .inner{max-width:1080px;margin:0 auto;padding:.55rem 18px;display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+  nav.top .logo{display:flex;align-items:center;gap:.5rem;color:#fff;font-family:"Fredoka";font-weight:700;font-size:1.15rem}
+  nav.top .logo .mini{width:30px;height:38px}
+  nav.top .links{display:flex;gap:.35rem;flex-wrap:wrap}
+  nav.top a.link{color:#fff;text-decoration:none;font-weight:800;font-size:.82rem;padding:.35rem .7rem;border-radius:999px;background:rgba(255,255,255,.1)}
+  nav.top a.link:hover{background:rgba(255,255,255,.22)}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;overflow:hidden;padding:2.2rem 0 1rem;text-align:center;color:#fff}
+  .hero .clouds{position:absolute;inset:0;pointer-events:none}
+  .hero h1{font-size:clamp(2.6rem,8vw,5.2rem);line-height:1;margin:.4rem 0 .3rem;
+    text-shadow:0 6px 0 rgba(0,0,0,.25)}
+  .hero h1 .a{color:#fff} .hero h1 .b{color:var(--yellow)}
+  .hero h1 span.amp{color:var(--pink)}
+  .hero p.tag{max-width:620px;margin:.4rem auto 1.1rem;font-weight:700;color:#e9e2ff;font-size:clamp(1rem,2.4vw,1.25rem)}
+  .hero .cta{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+  .floaters{position:relative;height:120px;margin-top:.5rem}
+  .floater{position:absolute;bottom:0;width:74px;animation:bob 3s ease-in-out infinite}
+  .floater:nth-child(1){left:4%;animation-delay:.1s}
+  .floater:nth-child(2){left:20%;animation-delay:.6s;width:56px}
+  .floater:nth-child(3){left:38%;animation-delay:1.1s;width:64px}
+  .floater:nth-child(4){left:56%;animation-delay:.3s;width:52px}
+  .floater:nth-child(5){left:72%;animation-delay:.9s;width:70px}
+  .floater:nth-child(6){left:88%;animation-delay:1.4s;width:58px}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-22px)}}
+
+  .ground{height:46px;background:
+      linear-gradient(#59c94f,#3fae4a);
+    border-top:8px solid #7ee06f;
+    background-image:
+      linear-gradient(90deg, rgba(0,0,0,.12) 2px, transparent 2px),
+      linear-gradient(0deg, rgba(0,0,0,.12) 2px, transparent 2px),
+      linear-gradient(#59c94f,#3fae4a);
+    background-size:34px 34px,34px 34px,100% 100%;
+    box-shadow:inset 0 6px 0 rgba(255,255,255,.25);
+  }
+
+  /* ---------- sections ---------- */
+  section{padding:2rem 0}
+  .card{background:var(--card);border-radius:26px;padding:1.6rem;box-shadow:var(--shadow);border:4px solid #fff}
+  .title{display:flex;align-items:center;gap:.6rem;font-size:clamp(1.6rem,4.5vw,2.4rem);margin-bottom:.4rem}
+  .title .ic{font-size:1.5em;line-height:1}
+  .sub{color:var(--muted);font-weight:700;margin:0 0 1.1rem}
+
+  /* ---------- color picker ---------- */
+  .creator{display:grid;grid-template-columns:200px 1fr;gap:1.4rem;align-items:center}
+  .stage{background:linear-gradient(180deg,#eef4ff,#dfe9ff);border-radius:22px;padding:1rem;display:flex;
+    flex-direction:column;align-items:center;justify-content:center;border:4px dashed #b9c8ec;min-height:240px}
+  .stage svg{width:120px;filter:drop-shadow(0 10px 10px rgba(0,0,0,.18))}
+  .stage .name{margin-top:.5rem;font-family:"Fredoka";font-weight:700;font-size:1.25rem;color:#3a2a6a;text-align:center}
+  .swatches{display:flex;flex-wrap:wrap;gap:.55rem}
+  .sw{width:46px;height:46px;border-radius:14px;border:4px solid #fff;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.18);transition:transform .1s}
+  .sw:hover{transform:translateY(-3px)}
+  .sw.sel{outline:4px solid var(--ink);outline-offset:2px;transform:translateY(-3px)}
+  .row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:1rem}
+
+  /* ---------- impostor game ---------- */
+  .gamebar{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:1rem}
+  .score{font-family:"Fredoka";font-weight:700;font-size:1.1rem;background:#f1ecff;padding:.5rem .9rem;border-radius:14px;color:#4a2f9e}
+  .score b{color:#8a5cff}
+  .board{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;background:linear-gradient(180deg,#eaf3ff,#dbe9ff);
+    border-radius:22px;padding:1rem;border:4px solid #cfe0ff}
+  .cell{background:rgba(255,255,255,.6);border-radius:16px;padding:.35rem;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;transition:transform .1s, background .15s;user-select:none;aspect-ratio:1/1.15}
+  .cell svg{width:74%;height:auto}
+  .cell:hover{background:#fff;transform:scale(1.05)}
+  .cell.wrong{animation:wiggle .35s}
+  @keyframes wiggle{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .cell.correct{background:#b8ffcf;box-shadow:0 0 0 4px #2fd36b inset}
+  .toast{text-align:center;font-family:"Fredoka";font-weight:700;font-size:1.15rem;min-height:1.6rem;margin-top:1rem}
+
+  /* ---------- tasks ---------- */
+  .tasks{display:grid;gap:.7rem}
+  .task{display:flex;align-items:center;gap:.8rem;background:#f3f6ff;border-radius:16px;padding:.75rem 1rem;
+    cursor:pointer;font-weight:800;border:3px solid #e2e8ff;transition:transform .1s}
+  .task:hover{transform:translateX(4px)}
+  .task .box{width:28px;height:28px;border-radius:9px;background:#fff;border:3px solid #b9c6ef;display:flex;
+    align-items:center;justify-content:center;font-size:1.1rem;flex:none}
+  .task.done{background:#dffbe7;border-color:#a9efc0;text-decoration:line-through;color:#3d7a54}
+  .task.done .box{background:var(--green);border-color:var(--green);color:#fff}
+  .bar{height:26px;background:#e7e9ff;border-radius:999px;overflow:hidden;border:3px solid #cfe0ff;margin-top:1rem}
+  .bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,#2fd36b,#7ee06f);transition:width .4s}
+
+  /* ---------- obby ---------- */
+  .obby{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem}
+  .step{background:linear-gradient(180deg,#fff,#f0f5ff);border-radius:18px;padding:1rem;text-align:center;
+    border:4px solid #e3ecff;box-shadow:0 6px 0 rgba(0,0,0,.08)}
+  .step .num{font-family:"Fredoka";font-weight:700;font-size:1.1rem;color:#8a5cff}
+  .step .em{font-size:2.2rem;display:block;margin:.25rem 0}
+  .step .tx{font-weight:800;font-size:.92rem;color:#4a3f68}
+  .blocky-wrap{display:flex;justify-content:center;margin-top:1rem;position:relative}
+  .blocky{width:120px;animation:hop 1.6s ease-in-out infinite}
+  @keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-26px) rotate(-3deg)}60%{transform:translateY(-26px) rotate(3deg)}}
+
+  /* ---------- jokes ---------- */
+  .jokes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.9rem}
+  .joke{background:linear-gradient(180deg,#fff2fb,#ffe6f5);border-radius:18px;padding:1rem;font-weight:800;
+    color:#7a2f5c;border:4px solid #ffd0ea}
+  .joke:before{content:"😂 ";}
+
+  /* ---------- meeting overlay ---------- */
+  .overlay{position:fixed;inset:0;z-index:60;background:rgba(120,0,0,.86);display:none;
+    align-items:center;justify-content:center;padding:20px;text-align:center}
+  .overlay.show{display:flex;animation:flash .5s}
+  @keyframes flash{0%{background:rgba(255,0,0,.9)}100%{background:rgba(120,0,0,.86)}}
+  .overlay .panel{background:#fff;border-radius:24px;padding:1.8rem;max-width:460px;box-shadow:0 16px 0 rgba(0,0,0,.3)}
+  .overlay h2{font-size:1.8rem;color:#c81e1e;margin-bottom:.5rem}
+  .overlay p{font-weight:800;color:#3a2a2a;font-size:1.05rem}
+  .shake{animation:shake .5s}
+  @keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,4px)}40%{transform:translate(8px,-4px)}60%{transform:translate(-6px,-4px)}80%{transform:translate(6px,4px)}}
+
+  .confetti{position:fixed;top:-20px;width:12px;height:18px;z-index:70;border-radius:3px;pointer-events:none}
+
+  footer{color:#cfc6ea;text-align:center;font-weight:700;padding:1.6rem 0 2.4rem;font-size:.86rem}
+  footer .heart{color:var(--pink)}
+
+  @media(max-width:640px){
+    .creator{grid-template-columns:1fr}
+    nav.top .links a.link{font-size:.72rem;padding:.3rem .55rem}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top"><div class="inner">
+  <div class="logo" id="navlogo">👾 Among Blocks</div>
+  <div class="links">
+    <a class="link" href="#crewmate">Crewmate</a>
+    <a class="link" href="#impostor">Impostor</a>
+    <a class="link" href="#tasks">Tasks</a>
+    <a class="link" href="#obby">Obby</a>
+  </div>
+</div></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="pill">A fan mashup just for fun</span>
+    <h1><span class="a">AMONG</span> <span class="amp">×</span> <span class="b">BLOCKS</span></h1>
+    <p class="tag">Pick your crewmate, sniff out the sneaky impostor, finish your tasks,
+      and beat the blocky obby! 🚀🧱</p>
+    <div class="cta">
+      <a class="btn pink big" href="#impostor">▶ Play Find the Impostor</a>
+      <a class="btn big" href="#crewmate">🎨 Make your crewmate</a>
+    </div>
+    <div class="floaters" id="floaters"></div>
+  </div>
+</header>
+<div class="ground"></div>
+
+<!-- CREWMATE CREATOR -->
+<section id="crewmate"><div class="wrap">
+  <div class="card">
+    <div class="title"><span class="ic">🎨</span> Make Your Crewmate</div>
+    <p class="sub">Tap a colour, then roll a silly name. Your crewmate is ready for space!</p>
+    <div class="creator">
+      <div class="stage">
+        <div id="preview"></div>
+        <div class="name" id="crewName">Nova 7</div>
+      </div>
+      <div>
+        <div class="swatches" id="swatches"></div>
+        <div class="row">
+          <button class="btn blue" id="rollName">🎲 Random name</button>
+          <button class="btn green" id="surprise">🌈 Surprise colour</button>
+          <button class="btn" id="meeting">🚨 Emergency Meeting</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- IMPOSTOR GAME -->
+<section id="impostor"><div class="wrap">
+  <div class="card">
+    <div class="title"><span class="ic">🔎</span> Find the Impostor</div>
+    <p class="sub">One crewmate is a slightly different colour. Tap it to catch the impostor!
+      Each win makes it trickier. 😈</p>
+    <div class="gamebar">
+      <div class="score">Score: <b id="score">0</b> &nbsp;·&nbsp; Level: <b id="level">1</b></div>
+      <button class="btn pink" id="newGame">🔄 New game</button>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="toast" id="toast">Good luck, detective!</div>
+  </div>
+</div></section>
+
+<!-- TASKS -->
+<section id="tasks"><div class="wrap">
+  <div class="card">
+    <div class="title"><span class="ic">📋</span> Do Your Tasks</div>
+    <p class="sub">Click each task to finish it and fill the crew's task bar. When it's full — you win!</p>
+    <div class="tasks" id="taskList"></div>
+    <div class="bar"><span id="taskBar"></span></div>
+    <div class="toast" id="taskToast"></div>
+  </div>
+</div></section>
+
+<!-- OBBY -->
+<section id="obby"><div class="wrap">
+  <div class="card">
+    <div class="title"><span class="ic">🧱</span> The Blocky Obby</div>
+    <p class="sub">A super-silly obstacle course across the blocky world. Can you make it to the end?</p>
+    <div class="obby">
+      <div class="step"><div class="num">Step 1</div><span class="em">🟩🟩🟩</span><div class="tx">Jump the green blocks!</div></div>
+      <div class="step"><div class="num">Step 2</div><span class="em">🌋</span><div class="tx">Dodge the lava floor!</div></div>
+      <div class="step"><div class="num">Step 3</div><span class="em">🌀</span><div class="tx">Ride the spinning platform!</div></div>
+      <div class="step"><div class="num">Step 4</div><span class="em">⭐</span><div class="tx">Grab the star checkpoint!</div></div>
+      <div class="step"><div class="num">Step 5</div><span class="em">🏁</span><div class="tx">Reach the finish flag!</div></div>
+    </div>
+    <div class="blocky-wrap"><div class="blocky" id="blocky"></div></div>
+  </div>
+</div></section>
+
+<!-- JOKES -->
+<section><div class="wrap">
+  <div class="card">
+    <div class="title"><span class="ic">🤣</span> Silly Space Jokes</div>
+    <p class="sub">Giggle break!</p>
+    <div class="jokes">
+      <div class="joke">Why did the crewmate ride the obby? It wanted a block-tastic shortcut!</div>
+      <div class="joke">The impostor tried to hide… but it was way too sus. 👀</div>
+      <div class="joke">Crewmates have tiny legs, so they slide down every slide. Wheee!</div>
+      <div class="joke">What's a blocky astronaut's favourite snack? A meteor-burger! 🍔</div>
+      <div class="joke">Emergency meeting! Someone ate the last space cookie. 🍪</div>
+      <div class="joke">How do crewmates say hello? "Hi, I'm Bean! Nice to meet ya!"</div>
+    </div>
+  </div>
+</div></section>
+
+<footer>
+  Made with <span class="heart">♥</span> as a fun fan mashup inspired by <b>Among Us</b> and <b>Roblox</b>.<br/>
+  All artwork is original and drawn with shapes — this page is just for fun and isn't an official game.
+</footer>
+
+<!-- Emergency overlay -->
+<div class="overlay" id="overlay">
+  <div class="panel">
+    <h2>🚨 EMERGENCY MEETING!</h2>
+    <p id="meetMsg">Someone is very sus…</p>
+    <div class="row" style="justify-content:center">
+      <button class="btn pink" id="closeMeet">OK 👍</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- crewmate art (original SVG) ---------- */
+function shade(hex, p){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  const f=x=>Math.max(0,Math.min(255, Math.round(x + (p<0? x*p/100 : (255-x)*p/100))));
+  r=f(r); g=f(g); b=f(b);
+  return "#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function crew(color, cls){
+  const dark=shade(color,-16), hi=shade(color,22);
+  return `<svg viewBox="0 0 120 156" class="${cls||''}" role="img" aria-label="crewmate">
+    <rect x="12" y="56" width="26" height="58" rx="12" fill="${dark}"/>
+    <path d="M60 8 C92 8 106 32 106 68 V104 C106 124 92 136 72 136 H48 C28 136 14 124 14 104 V68 C14 32 28 8 60 8 Z" fill="${color}"/>
+    <path d="M60 8 C44 8 33 20 28 40 C40 28 55 24 72 26 C86 28 96 36 102 48 C102 26 90 8 60 8 Z" fill="${hi}" opacity="0.5"/>
+    <ellipse cx="78" cy="54" rx="26" ry="19" fill="#d3f0fb"/>
+    <ellipse cx="78" cy="54" rx="26" ry="19" fill="none" stroke="#b7e2f4" stroke-width="2"/>
+    <ellipse cx="70" cy="46" rx="9" ry="7" fill="#ffffff" opacity="0.85"/>
+    <rect x="32" y="128" width="20" height="22" rx="9" fill="${dark}"/>
+    <rect x="68" y="128" width="20" height="22" rx="9" fill="${dark}"/>
+  </svg>`;
+}
+function blocky(){
+  return `<svg viewBox="0 0 120 180" role="img" aria-label="blocky friend">
+    <rect x="14" y="76" width="18" height="52" rx="6" fill="#f5d33f"/>
+    <rect x="88" y="76" width="18" height="52" rx="6" fill="#f5d33f"/>
+    <rect x="36" y="132" width="20" height="44" rx="6" fill="#3fae4a"/>
+    <rect x="64" y="132" width="20" height="44" rx="6" fill="#3fae4a"/>
+    <rect x="34" y="74" width="52" height="58" rx="7" fill="#2f6fd0"/>
+    <rect x="30" y="10" width="60" height="60" rx="9" fill="#f5d33f"/>
+    <rect x="43" y="32" width="11" height="14" rx="4" fill="#2a2a2a"/>
+    <rect x="66" y="32" width="11" height="14" rx="4" fill="#2a2a2a"/>
+    <path d="M47 55 q13 11 26 0" stroke="#2a2a2a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <rect x="52" y="10" width="8" height="6" rx="3" fill="#e0bf2e"/>
+  </svg>`;
+}
+
+/* ---------- colors ---------- */
+const COLORS=["#c51111","#132ed1","#117f2d","#ed54ba","#ef7d0d","#f5f557",
+              "#3f474e","#d6e0f0","#6b2fbb","#71491e","#38fedc","#50ef39"];
+let current=COLORS[1];
+
+/* hero floaters */
+const fl=document.getElementById('floaters');
+fl.innerHTML=COLORS.slice(0,6).map(c=>`<div class="floater">${crew(c)}</div>`).join("");
+document.getElementById('blocky').innerHTML=blocky();
+
+/* color swatches */
+const swBox=document.getElementById('swatches');
+COLORS.forEach((c,i)=>{
+  const b=document.createElement('div');
+  b.className='sw'+(c===current?' sel':''); b.style.background=c; b.title='colour '+(i+1);
+  b.onclick=()=>{ current=c; document.querySelectorAll('.sw').forEach(s=>s.classList.remove('sel'));
+    b.classList.add('sel'); paintPreview(); };
+  swBox.appendChild(b);
+});
+function paintPreview(){ document.getElementById('preview').innerHTML=crew(current); }
+paintPreview();
+
+/* names */
+const NAMES=["Nova","Sprinkle","Pixel","Bolt","Ziggy","Turbo","Mochi","Cosmo","Dash","Byte",
+             "Waffle","Blaze","Comet","Fizz","Pebble","Rocket","Snicker","Doodle","Peppy","Quark"];
+function rollName(){ document.getElementById('crewName').textContent =
+  NAMES[Math.floor(Math.random()*NAMES.length)]+" "+Math.floor(1+Math.random()*99); }
+document.getElementById('rollName').onclick=rollName;
+document.getElementById('surprise').onclick=()=>{
+  current=COLORS[Math.floor(Math.random()*COLORS.length)];
+  [...swBox.children].forEach((s,i)=>s.classList.toggle('sel', COLORS[i]===current));
+  paintPreview(); rollName();
+};
+
+/* ---------- find the impostor ---------- */
+const board=document.getElementById('board');
+let score=0, level=1, target=-1, diff=26, base="#c51111";
+function newRound(){
+  board.innerHTML=""; target=Math.floor(Math.random()*25);
+  base=COLORS[Math.floor(Math.random()*COLORS.length)];
+  const imp=shade(base, diff);
+  for(let i=0;i<25;i++){
+    const cell=document.createElement('div');
+    cell.className='cell';
+    cell.innerHTML=crew(i===target?imp:base);
+    cell.onclick=()=>pick(i,cell);
+    board.appendChild(cell);
+  }
+  document.getElementById('toast').textContent="Level "+level+" — spot the odd one!";
+}
+function pick(i,cell){
+  if(i===target){
+    cell.classList.add('correct');
+    score++; level++;
+    diff=Math.max(7, diff-3);
+    document.getElementById('score').textContent=score;
+    document.getElementById('level').textContent=level;
+    document.getElementById('toast').textContent="🎉 Caught the impostor! Get ready for the next one…";
+    confetti();
+    setTimeout(newRound, 900);
+  } else {
+    cell.classList.add('wrong');
+    document.getElementById('toast').textContent="😅 Not that one — look closely!";
+    setTimeout(()=>cell.classList.remove('wrong'), 400);
+  }
+}
+document.getElementById('newGame').onclick=()=>{ score=0; level=1; diff=26;
+  document.getElementById('score').textContent=0; document.getElementById('level').textContent=1; newRound(); };
+newRound();
+
+/* ---------- tasks ---------- */
+const TASKS=[["🔧 Fix the spaceship wires","#tasks"],["⛽ Fill the fuel tanks",""],
+  ["📡 Send the space signal",""],["🧹 Sweep the blocky floor",""],["⭐ Collect the gold star",""]];
+const taskList=document.getElementById('taskList');
+TASKS.forEach((t,idx)=>{
+  const d=document.createElement('div'); d.className='task';
+  d.innerHTML=`<span class="box"></span><span>${t[0]}</span>`;
+  d.onclick=()=>{ d.classList.toggle('done');
+    const done=taskList.querySelectorAll('.task.done').length;
+    document.getElementById('taskBar').style.width=(done/TASKS.length*100)+'%';
+    document.getElementById('taskToast').textContent =
+      done===TASKS.length ? "🛸 All tasks complete! The crew is safe!" : `${done}/${TASKS.length} tasks done`;
+    if(done===TASKS.length) confetti();
+  };
+  taskList.appendChild(d);
+});
+
+/* ---------- emergency meeting ---------- */
+const MSGS=["Someone is acting VERY sus… 👀","Roses are red, impostors are sneaky, finish your tasks before they get cheeky!",
+  "A crewmate reported a dropped pizza slice. 🍕","Red is not the impostor… or is it? 🤔",
+  "The blocky floor is lava! Who forgot to jump? 🔥","Beans are not allowed to ride the spinning platform. Sorry!"];
+document.getElementById('meeting').onclick=()=>{
+  document.getElementById('meetMsg').textContent=MSGS[Math.floor(Math.random()*MSGS.length)];
+  const o=document.getElementById('overlay'); o.classList.add('show');
+  document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'),500);
+};
+document.getElementById('closeMeet').onclick=()=>document.getElementById('overlay').classList.remove('show');
+document.getElementById('overlay').onclick=(e)=>{ if(e.target.id==='overlay') e.currentTarget.classList.remove('show'); };
+
+/* ---------- confetti ---------- */
+function confetti(){
+  const colors=["#ff5aa5","#3aa0ff","#2fd36b","#ffd23f","#ff8a3d","#8a5cff"];
+  for(let i=0;i<36;i++){
+    const c=document.createElement('div'); c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.transform='rotate('+Math.random()*360+'deg)';
+    document.body.appendChild(c);
+    const dur=1200+Math.random()*1200;
+    c.animate([{transform:'translateY(0) rotate(0)',opacity:1},
+               {transform:`translateY(${window.innerHeight+60}px) rotate(${Math.random()*720}deg)`,opacity:1}],
+              {duration:dur,easing:'ease-in'});
+    setTimeout(()=>c.remove(),dur);
+  }
+}
+rollName();
+</script>
+</body>
+</html>
