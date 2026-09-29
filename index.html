@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Among Blocks — Crewmates × Blocks Obby Adventure!</title>
 <meta name="description" content="A super fun fan mashup of Among Us and Roblox for kids: pick your crewmate, find the impostor, do your tasks and beat the blocky obby!" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%BE%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -578,8 +581,13 @@ rollName();
   function drawPlayer(){
     const {x,y,w,h}=player;
     ctx.save();
-    ctx.translate(x,y);                 /* <-- put the character where it actually is! */
+    ctx.translate(x + w/2, y + h);      /* anchor the character at its feet */
+    ctx.scale(1.75,1.75);               /* draw it big and clear for kids */
+    ctx.translate(-w/2, -h);
     ctx.globalAlpha = flash>0 ? (flash%2?0.35:1) : 1;
+    /* friendly glow so you can always spot yourself */
+    ctx.fillStyle='rgba(255,210,63,.22)';
+    ctx.beginPath(); ctx.ellipse(w/2, h*0.5, w*1.05, h*0.95, 0, 0, Math.PI*2); ctx.fill();
     ctx.lineJoin='round';
     const swing = player.onGround ? Math.sin(walk)*3 : 0;
 
