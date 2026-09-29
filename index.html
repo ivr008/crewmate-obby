@@ -136,16 +136,28 @@
   .bar{height:26px;background:#e7e9ff;border-radius:999px;overflow:hidden;border:3px solid #cfe0ff;margin-top:1rem}
   .bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,#2fd36b,#7ee06f);transition:width .4s}
 
-  /* ---------- obby ---------- */
-  .obby{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem}
-  .step{background:linear-gradient(180deg,#fff,#f0f5ff);border-radius:18px;padding:1rem;text-align:center;
-    border:4px solid #e3ecff;box-shadow:0 6px 0 rgba(0,0,0,.08)}
-  .step .num{font-family:"Fredoka";font-weight:700;font-size:1.1rem;color:#8a5cff}
-  .step .em{font-size:2.2rem;display:block;margin:.25rem 0}
-  .step .tx{font-weight:800;font-size:.92rem;color:#4a3f68}
-  .blocky-wrap{display:flex;justify-content:center;margin-top:1rem;position:relative}
-  .blocky{width:120px;animation:hop 1.6s ease-in-out infinite}
-  @keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-26px) rotate(-3deg)}60%{transform:translateY(-26px) rotate(3deg)}}
+  /* ---------- obby game ---------- */
+  .game-shell{position:relative;border-radius:20px;overflow:hidden;border:5px solid #fff;
+    box-shadow:0 12px 0 rgba(0,0,0,.18);background:#2a1156}
+  #obbyCanvas{display:block;width:100%;height:420px;outline:none;touch-action:none}
+  .hud{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:.5rem;align-items:center;
+    justify-content:space-between;flex-wrap:wrap;pointer-events:none}
+  .hud span{background:rgba(0,0,0,.45);color:#fff;font-weight:800;font-family:"Fredoka";
+    padding:.35rem .7rem;border-radius:12px;font-size:.9rem}
+  .hud .btn{pointer-events:auto;padding:.4rem .9rem;font-size:.85rem;box-shadow:0 4px 0 #d9a900}
+  .game-overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;gap:.6rem;background:rgba(20,12,42,.82);color:#fff;
+    padding:1.2rem;z-index:5}
+  .game-overlay.show{display:flex}
+  .game-overlay h3{font-size:clamp(1.3rem,4vw,2rem)}
+  .game-overlay p{font-weight:800;color:#e9e2ff;max-width:440px;margin:0}
+  .game-overlay b{color:#ffd23f}
+  .touch{display:flex;gap:.6rem;justify-content:center;margin-top:.9rem;flex-wrap:wrap}
+  .tbtn{font-family:"Fredoka";font-weight:700;font-size:1.15rem;border:0;border-radius:18px;
+    padding:.7rem 1.3rem;background:#eef3ff;color:#3a2a6a;box-shadow:0 5px 0 #c7d3f5;cursor:pointer;
+    user-select:none;touch-action:none;min-width:76px}
+  .tbtn:active{transform:translateY(3px);box-shadow:0 2px 0 #c7d3f5}
+  @media(max-width:640px){#obbyCanvas{height:320px}}
 
   /* ---------- jokes ---------- */
   .jokes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.9rem}
@@ -250,19 +262,35 @@
   </div>
 </div></section>
 
-<!-- OBBY -->
+<!-- OBBY (playable) -->
 <section id="obby"><div class="wrap">
   <div class="card">
-    <div class="title"><span class="ic">🧱</span> The Blocky Obby</div>
-    <p class="sub">A super-silly obstacle course across the blocky world. Can you make it to the end?</p>
-    <div class="obby">
-      <div class="step"><div class="num">Step 1</div><span class="em">🟩🟩🟩</span><div class="tx">Jump the green blocks!</div></div>
-      <div class="step"><div class="num">Step 2</div><span class="em">🌋</span><div class="tx">Dodge the lava floor!</div></div>
-      <div class="step"><div class="num">Step 3</div><span class="em">🌀</span><div class="tx">Ride the spinning platform!</div></div>
-      <div class="step"><div class="num">Step 4</div><span class="em">⭐</span><div class="tx">Grab the star checkpoint!</div></div>
-      <div class="step"><div class="num">Step 5</div><span class="em">🏁</span><div class="tx">Reach the finish flag!</div></div>
+    <div class="title"><span class="ic">🧱</span> The Blocky Obby — <span style="color:#8a5cff">Play it!</span></div>
+    <p class="sub">Run to the right with <b>←</b> <b>→</b> and jump with <b>Space</b>. Dodge the lava 🌋,
+      grab the ⭐ checkpoint and reach the 🏁 flag! On a tablet, use the buttons below.</p>
+    <div class="game-shell">
+      <canvas id="obbyCanvas" tabindex="0" aria-label="Blocky obby game"></canvas>
+      <div class="hud">
+        <span id="hudTimer">⏱️ 0.0s</span>
+        <span id="hudCheck">⭐ 0/1</span>
+        <button class="btn" id="restartObby">🔄 Restart</button>
+      </div>
+      <div class="game-overlay show" id="gameStart">
+        <h3>🧱 Ready to run the obby?</h3>
+        <p>Move with <b>←</b> <b>→</b> and jump with <b>Space</b> (or ⤒). Dodge the lava and reach the flag!</p>
+        <button class="btn pink big" id="startObby">▶ Start!</button>
+      </div>
+      <div class="game-overlay" id="gameWin">
+        <h3>🏁 You did it! 🎉</h3>
+        <p id="winMsg">Amazing obby skills!</p>
+        <button class="btn green big" id="againObby">▶ Play again</button>
+      </div>
     </div>
-    <div class="blocky-wrap"><div class="blocky" id="blocky"></div></div>
+    <div class="touch">
+      <button class="tbtn" id="tLeft" aria-label="move left">◀</button>
+      <button class="tbtn" id="tJump" aria-label="jump">⤒ Jump</button>
+      <button class="tbtn" id="tRight" aria-label="move right">▶</button>
+    </div>
   </div>
 </div></section>
 
@@ -343,7 +371,6 @@ let current=COLORS[1];
 /* hero floaters */
 const fl=document.getElementById('floaters');
 fl.innerHTML=COLORS.slice(0,6).map(c=>`<div class="floater">${crew(c)}</div>`).join("");
-document.getElementById('blocky').innerHTML=blocky();
 
 /* color swatches */
 const swBox=document.getElementById('swatches');
@@ -451,6 +478,163 @@ function confetti(){
   }
 }
 rollName();
+
+/* ================================================================
+   BLOCKY OBBY — a real playable platformer
+   ================================================================ */
+(function(){
+  const canvas=document.getElementById('obbyCanvas');
+  const ctx=canvas.getContext('2d');
+  const VIEW_H=420, WORLD_W=2400, WORLD_H=480;
+  let VIEW_W=800, dpr=1;
+
+  function resize(){ dpr=Math.min(window.devicePixelRatio||1,2);
+    VIEW_W=canvas.clientWidth||800; canvas.width=Math.round(VIEW_W*dpr);
+    canvas.height=Math.round(VIEW_H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
+  window.addEventListener('resize', resize);
+
+  /* ---- level ---- */
+  const solids=[
+    {x:0,y:380,w:420,h:100,kind:'grass'},
+    {x:540,y:380,w:360,h:100,kind:'grass'},
+    {x:900,y:340,w:110,h:140,kind:'brick',color:'#e34d4d'},
+    {x:1010,y:300,w:110,h:180,kind:'brick',color:'#4d7de3'},
+    {x:1120,y:260,w:120,h:220,kind:'brick',color:'#f0c419'},
+    {x:1560,y:230,w:400,h:250,kind:'grass'},
+    {x:2040,y:230,w:320,h:250,kind:'grass'}
+  ];
+  const moving={x:1250,y:250,w:150,h:26,kind:'brick',color:'#8a5cff',x0:1250,x1:1420,dir:1,speed:1.35};
+  const lava={x:420,y:428,w:1920,h:52};
+  const spikes=[{x:1760,y:214,w:90,h:16}];
+  const star={x:1160,y:210,w:30,h:30};
+  const flag={x:2260,y:150,w:24,h:80};
+  const START={x:60,y:342}, CHECK={x:1140,y:222};
+
+  let player, cam={x:0,y:0}, keys={left:false,right:false,jump:false};
+  let state='ready', checkpointGot=false, elapsed=0, walk=0, flash=0;
+
+  function reset(full){ player={x:START.x,y:START.y,w:30,h:38,vx:0,vy:0,onGround:false,facing:1};
+    if(full){ checkpointGot=false; elapsed=0; } else { const s=checkpointGot?CHECK:START; player.x=s.x; player.y=s.y; } }
+  function respawn(){ flash=16; const s=checkpointGot?CHECK:START; player.x=s.x; player.y=s.y; player.vx=0; player.vy=0; }
+  const ov=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
+
+  function update(){
+    elapsed+=1/60;
+    /* moving platform */
+    const oldx=moving.x; moving.x+=moving.dir*moving.speed;
+    if(moving.x<moving.x0){moving.x=moving.x0;moving.dir=1;} if(moving.x>moving.x1){moving.x=moving.x1;moving.dir=-1;}
+    const mdx=moving.x-oldx;
+    const feet=player.y+player.h;
+    if(player.onGround && Math.abs(feet-moving.y)<5 && player.x+player.w>moving.x && player.x<moving.x+moving.w) player.x+=mdx;
+    /* input */
+    if(keys.left){player.vx-=1.0; player.facing=-1;} if(keys.right){player.vx+=1.0; player.facing=1;}
+    if(!keys.left && !keys.right) player.vx*=0.80;
+    player.vx=Math.max(-5.2,Math.min(5.2,player.vx));
+    if(keys.jump && player.onGround){ player.vy=-13.4; player.onGround=false; }
+    player.vy+=0.8; if(player.vy>17) player.vy=17;
+    /* x */
+    player.x+=player.vx;
+    for(const s of solids) if(ov(player,s)){ if(player.vx>0)player.x=s.x-player.w; else if(player.vx<0)player.x=s.x+s.w; player.vx=0; }
+    if(ov(player,moving)){ if(player.vx>0)player.x=moving.x-player.w; else if(player.vx<0)player.x=moving.x+moving.w; player.vx=0; }
+    /* y */
+    player.y+=player.vy; player.onGround=false;
+    for(const s of solids.concat([moving])){ if(ov(player,s)){ if(player.vy>0){player.y=s.y-player.h; player.onGround=true;} else if(player.vy<0){player.y=s.y+s.h;} player.vy=0; } }
+    if(player.x<0){player.x=0;player.vx=0;} if(player.x+player.w>WORLD_W){player.x=WORLD_W-player.w;player.vx=0;}
+    /* hazards, checkpoint, finish */
+    if(ov(player,lava) || spikes.some(s=>ov(player,s)) || player.y>WORLD_H) respawn();
+    if(!checkpointGot && ov(player,star)) checkpointGot=true;
+    if(ov(player,flag)){ state='won'; showWin(); }
+    walk += Math.abs(player.vx)*0.2; if(flash>0) flash--;
+    /* camera */
+    cam.x=Math.max(0,Math.min(player.x-VIEW_W*0.36, WORLD_W-VIEW_W));
+    cam.y=Math.max(0,Math.min(player.y-180, WORLD_H-VIEW_H));
+  }
+
+  function rr(x,y,w,h,r){ r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function drawGrass(s){ ctx.fillStyle='#8a5a2b'; ctx.fillRect(s.x,s.y,s.w,s.h);
+    ctx.fillStyle='rgba(0,0,0,.10)'; for(let i=0;i<s.w;i+=30) ctx.fillRect(s.x+i,s.y+16,2,s.h-16);
+    for(let j=0;j<s.h;j+=26) ctx.fillRect(s.x,s.y+j+16,s.w,2);
+    ctx.fillStyle='#4fc24f'; ctx.fillRect(s.x,s.y,s.w,16); ctx.fillStyle='#7ee06f'; ctx.fillRect(s.x,s.y,s.w,6); }
+  function drawBrick(s){ ctx.fillStyle=s.color; ctx.fillRect(s.x,s.y,s.w,s.h);
+    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(s.x,s.y,s.w,5);
+    ctx.fillStyle='rgba(0,0,0,.16)'; for(let i=0;i<s.w;i+=24) ctx.fillRect(s.x+i,s.y,2,s.h); ctx.fillRect(s.x,s.y+s.h-4,s.w,4); }
+  function drawLava(){ const t=performance.now()/400;
+    ctx.fillStyle='#e8340c'; ctx.fillRect(lava.x,lava.y+10,lava.w,lava.h-10);
+    ctx.beginPath(); ctx.moveTo(lava.x,lava.y+12); for(let x=0;x<=lava.w;x+=14) ctx.lineTo(lava.x+x, lava.y+8+Math.sin((x/60)+t)*6);
+    ctx.lineTo(lava.x+lava.w,lava.y+lava.h); ctx.lineTo(lava.x,lava.y+lava.h); ctx.closePath(); ctx.fillStyle='#ff7a1a'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(lava.x,lava.y+16); for(let x=0;x<=lava.w;x+=18) ctx.lineTo(lava.x+x, lava.y+14+Math.sin((x/40)-t*1.3)*5);
+    ctx.lineTo(lava.x+lava.w,lava.y+lava.h); ctx.lineTo(lava.x,lava.y+lava.h); ctx.closePath();
+    ctx.fillStyle='#ffd23f'; ctx.globalAlpha=.7; ctx.fill(); ctx.globalAlpha=1; }
+  function drawSpikes(){ for(const s of spikes){ const n=Math.round(s.w/18); for(let i=0;i<n;i++){ const x=s.x+i*(s.w/n);
+    ctx.beginPath(); ctx.moveTo(x,s.y+s.h); ctx.lineTo(x+(s.w/n)/2,s.y); ctx.lineTo(x+s.w/n,s.y+s.h); ctx.closePath();
+    ctx.fillStyle='#b9c2d6'; ctx.fill(); ctx.strokeStyle='#8a95ad'; ctx.lineWidth=2; ctx.stroke(); } } }
+  function drawStar(){ const cx=star.x+star.w/2, cy=star.y+star.h/2, R=star.w/2, r=R*0.45; ctx.beginPath();
+    for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rad=i%2?r:R; ctx.lineTo(cx+Math.cos(a)*rad, cy+Math.sin(a)*rad); }
+    ctx.closePath(); ctx.fillStyle=checkpointGot?'#2fd36b':'#ffd23f'; ctx.fill(); ctx.strokeStyle='#e0a800'; ctx.lineWidth=2; ctx.stroke(); }
+  function drawFlag(){ ctx.fillStyle='#cfd6e4'; ctx.fillRect(flag.x,flag.y,6,flag.h);
+    const fw=42, fh=30, cols=['#ffffff','#e8352f'];
+    for(let i=0;i<3;i++) for(let j=0;j<2;j++){ ctx.fillStyle=cols[(i+j)%2]; ctx.fillRect(flag.x+6+i*(fw/3), flag.y+4+j*(fh/2), fw/3, fh/2); } }
+  function drawPlayer(){ const {x,y,w,h}=player; ctx.save();
+    ctx.globalAlpha = flash>0 ? (flash%2?0.35:1) : 1;
+    const swing=player.onGround?Math.sin(walk)*3:0;
+    ctx.fillStyle='#3fae4a'; ctx.fillRect(w*0.16,h*0.74,w*0.28,h*0.26-Math.max(0,swing)); ctx.fillRect(w*0.56,h*0.74,w*0.28,h*0.26-Math.max(0,-swing));
+    ctx.fillStyle='#2f6fd0'; ctx.fillRect(w*0.16,h*0.36,w*0.68,h*0.40);
+    ctx.fillStyle='#f5d33f'; ctx.fillRect(-w*0.02,h*0.38,w*0.18,h*0.34); ctx.fillRect(w*0.84,h*0.38,w*0.18,h*0.34);
+    const hs=w*0.72, hx=(w-hs)/2; ctx.fillStyle='#f5d33f'; rr(hx,0,hs,hs*0.92,4); ctx.fill();
+    ctx.fillStyle='#2a2a2a'; ctx.fillRect(hx+hs*0.18,hs*0.30,hs*0.18,hs*0.26); ctx.fillRect(hx+hs*0.64,hs*0.30,hs*0.18,hs*0.26);
+    ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=Math.max(2,w*0.05); ctx.beginPath();
+    ctx.arc(w/2,hs*0.50,hs*0.20,0.15*Math.PI,0.85*Math.PI); ctx.stroke(); ctx.restore(); }
+  function drawSky(){ const g=ctx.createLinearGradient(0,0,0,VIEW_H);
+    g.addColorStop(0,'#241056'); g.addColorStop(0.6,'#3a1f7a'); g.addColorStop(1,'#5a2ea0');
+    ctx.fillStyle=g; ctx.fillRect(0,0,VIEW_W,VIEW_H);
+    ctx.fillStyle='rgba(255,255,255,.85)';
+    for(let i=0;i<70;i++){ const sx=(((i*137.5-cam.x*0.25)%(VIEW_W+40))+(VIEW_W+40))%(VIEW_W+40)-20; const sy=(i*53)%VIEW_H*0.72; ctx.fillRect(sx,sy,2,2); }
+    ctx.fillStyle='rgba(255,255,255,.14)';
+    for(let i=0;i<6;i++){ const bx=(i*430-cam.x*0.45); const x=((bx%(WORLD_W+300))+(WORLD_W+300))%(WORLD_W+300)-150; const y=40+i*28;
+      ctx.fillRect(x,y,90,26); ctx.fillRect(x+26,y-18,42,20); ctx.fillRect(x+60,y+6,54,20); } }
+  function draw(){ drawSky(); ctx.save(); ctx.translate(-cam.x,-cam.y);
+    drawLava(); for(const s of solids){ s.kind==='grass'?drawGrass(s):drawBrick(s); }
+    drawBrick(moving); drawSpikes(); drawStar(); drawFlag(); drawPlayer(); ctx.restore();
+    if(flash>0){ ctx.fillStyle='rgba(255,80,80,'+(flash/40)+')'; ctx.fillRect(0,0,VIEW_W,VIEW_H); } }
+
+  function loop(){ if(state==='playing') update(); draw();
+    document.getElementById('hudTimer').textContent='⏱️ '+elapsed.toFixed(1)+'s';
+    document.getElementById('hudCheck').textContent='⭐ '+(checkpointGot?'1/1':'0/1');
+    requestAnimationFrame(loop); }
+
+  function showWin(){ const t=elapsed.toFixed(1);
+    document.getElementById('winMsg').textContent = checkpointGot
+      ? 'You reached the flag in '+t+' seconds and grabbed the checkpoint! ⭐'
+      : 'You reached the flag in '+t+' seconds! (Try grabbing the ⭐ next time!)';
+    document.getElementById('gameWin').classList.add('show');
+    try{ confetti(); confetti(); }catch(e){} }
+  function startGame(){ document.getElementById('gameStart').classList.remove('show');
+    document.getElementById('gameWin').classList.remove('show'); reset(true); state='playing'; canvas.focus(); }
+  document.getElementById('startObby').onclick=startGame;
+  document.getElementById('againObby').onclick=startGame;
+  document.getElementById('restartObby').onclick=()=>{ reset(true); state='playing'; };
+
+  function inView(){ const r=canvas.getBoundingClientRect(); return r.bottom>0 && r.top<window.innerHeight; }
+  window.addEventListener('keydown',e=>{ const k=e.key;
+    if(k==='ArrowLeft'||k==='a'||k==='A') keys.left=true;
+    if(k==='ArrowRight'||k==='d'||k==='D') keys.right=true;
+    if(k==='ArrowUp'||k==='w'||k==='W'||k===' '){ keys.jump=true; if(inView()) e.preventDefault(); }
+    if((k==='ArrowLeft'||k==='ArrowRight') && inView()) e.preventDefault(); });
+  window.addEventListener('keyup',e=>{ const k=e.key;
+    if(k==='ArrowLeft'||k==='a'||k==='A') keys.left=false;
+    if(k==='ArrowRight'||k==='d'||k==='D') keys.right=false;
+    if(k==='ArrowUp'||k==='w'||k==='W'||k===' ') keys.jump=false; });
+  function hold(el,setter){ const on=e=>{e.preventDefault(); setter(true);}; const off=e=>{e.preventDefault(); setter(false);};
+    el.addEventListener('pointerdown',on); el.addEventListener('pointerup',off);
+    el.addEventListener('pointerleave',off); el.addEventListener('pointercancel',off); }
+  hold(document.getElementById('tLeft'), v=>keys.left=v);
+  hold(document.getElementById('tRight'), v=>keys.right=v);
+  hold(document.getElementById('tJump'), v=>keys.jump=v);
+  canvas.addEventListener('pointerdown',()=>canvas.focus());
+
+  resize(); reset(true); loop();
+})();
 </script>
 </body>
 </html>
