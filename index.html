@@ -509,19 +509,57 @@ rollName();
     canvas.height=Math.round(VIEW_H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
   window.addEventListener('resize', resize);
 
-  /* ================= AUDIO (original chiptune) ================= */
+  /* ================= AUDIO (4 original chiptune tracks) =================
+     Each level gets its own song: tempo, key, waveform and groove differ. */
   const Audio=(function(){
     let ctx=null, master=null, musicBus=null, sfxBus=null, noiseBuf=null;
-    let on=true, step=0, nextTime=0, timer=null, running=false;
+    let on=true, step=0, nextTime=0, timer=null, running=false, track=null;
     const NOTE={C:0,'C#':1,D:2,'D#':3,E:4,F:5,'F#':6,G:7,'G#':8,A:9,'A#':10,B:11};
     function freq(n){ const m=/^([A-G]#?)(\d)$/.exec(n); if(!m) return 0;
       const midi=(parseInt(m[2])+1)*12+NOTE[m[1]]; return 440*Math.pow(2,(midi-69)/12); }
-    // original cheerful tune (I–V–vi–IV in C)
-    const MEL=['C5','E5','G5','E5','C5','E5','G5','E6',
-               'D5','G5','B5','G5','D5','G5','B5','D6',
-               'C5','E5','A5','E5','C5','E5','A5','C6',
-               'A4','C5','F5','C5','A4','C5','F5','A5'];
-    const BASS=['C3','C3','G2','G2','G2','G2','D3','D3','A2','A2','E3','E3','F2','F2','C3','C3'];
+
+    const TRACKS={
+      /* Level 1 — sunny, bouncy, cheerful (C major) */
+      meadow:{ bpm:142, lead:'square', bassW:'triangle', leadVol:0.16, bassVol:0.26, bassStep:2,
+        kick:4, snare:4, snareOff:2, hat:2,
+        melody:['C5','E5','G5','E5','C5','E5','G5','E6', 'D5','G5','B5','G5','D5','G5','B5','D6',
+                'C5','E5','A5','E5','C5','E5','A5','C6', 'A4','C5','F5','C5','A4','C5','F5','A5',
+                'F4','A4','C5','A4','F4','A4','C5','F5', 'G4','B4','D5','B4','G4','B4','D5','G5',
+                'C5','E5','G5','E5','C5','E5','G5','C6', 'G4','B4','D5','G5','C5','E5','G5','C6'],
+        bass:['C3','C3','G2','G2','G2','G2','D3','D3','A2','A2','E3','E3','F2','F2','C3','C3',
+              'F2','F2','C3','C3','G2','G2','D3','D3','C3','C3','G2','G2','C3','C3','G2','G2'] },
+
+      /* Level 2 — mysterious, cool, groovy cave (A minor) */
+      cave:{ bpm:130, lead:'triangle', bassW:'square', leadVol:0.30, bassVol:0.15, bassStep:2,
+        kick:4, snare:8, snareOff:4, hat:2,
+        melody:['A4','C5','E5','C5','A4','C5','E5','A5', 'G4','B4','D5','B4','G4','B4','D5','G5',
+                'F4','A4','C5','A4','F4','A4','C5','F5', 'E4','G4','B4','G4','E4','G4','B4','E5',
+                'A4','E5','A5','E5','A4','E5','A5','C6', 'G4','D5','G5','D5','G4','D5','G5','B5',
+                'F4','C5','F5','C5','F4','C5','F5','A5', 'E4','B4','E5','B4','E4','G#4','B4','E5'],
+        bass:['A2','A2','E2','E2','G2','G2','D2','D2','F2','F2','C2','C2','E2','E2','E2','E2',
+              'A2','A2','E2','E2','G2','G2','D2','D2','F2','F2','C2','C2','E2','E2','E2','E2'] },
+
+      /* Level 3 — icy, fast, sparkly (D major) */
+      snow:{ bpm:170, lead:'square', bassW:'triangle', leadVol:0.15, bassVol:0.24, bassStep:2,
+        kick:4, snare:4, snareOff:2, hat:1,
+        melody:['D5','F#5','A5','F#5','D5','F#5','A5','D6', 'E5','G5','B5','G5','E5','G5','B5','E6',
+                'F#5','A5','C#6','A5','F#5','A5','C#6','F#6', 'G5','B5','D6','B5','A5','C#6','E6','C#6',
+                'B4','D5','F#5','D5','B4','D5','F#5','B5', 'A4','C#5','E5','C#5','A4','C#5','E5','A5',
+                'G4','B4','D5','B4','G4','B4','D5','G5', 'A4','C#5','E5','A5','D5','F#5','A5','D6'],
+        bass:['D3','D3','A2','A2','E3','E3','B2','B2','F#3','F#3','C#3','C#3','G3','G3','A3','A3',
+              'B2','B2','F#2','F#2','A2','A2','E2','E2','G2','G2','D2','D2','A2','A2','A2','A2'] },
+
+      /* Level 4 — fiery, intense, driving (D minor) */
+      lava:{ bpm:186, lead:'sawtooth', bassW:'square', leadVol:0.12, bassVol:0.18, bassStep:1,
+        kick:2, snare:4, snareOff:2, hat:2,
+        melody:['D5','D5','F5','D5','A4','D5','F5','A5', 'C5','C5','E5','C5','G4','C5','E5','G5',
+                'A#4','A#4','D5','A#4','F4','A#4','D5','F5', 'A4','C#5','E5','A5','D5','F5','A5','D6',
+                'A#4','D5','F5','D5','A#4','D5','F5','A#5', 'A4','C#5','E5','C#5','A4','C#5','E5','A5',
+                'D5','F5','A5','F5','D5','F5','A5','D6', 'A4','C#5','E5','A5','D5','F5','A5','D6'],
+        bass:['D2','D2','D2','D2','D2','D2','D2','D2','C2','C2','C2','C2','C2','C2','C2','C2',
+              'A#2','A#2','A#2','A#2','A#2','A#2','A#2','A#2','A2','A2','A2','A2','D2','D2','D2','D2'] }
+    };
+
     function init(){ if(ctx) return; const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
       ctx=new AC();
       master=ctx.createGain(); master.gain.value=on?0.5:0; master.connect(ctx.destination);
@@ -542,25 +580,35 @@ rollName();
       s.buffer=noiseBuf; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
       s.connect(g); g.connect(dest); s.start(t); s.stop(t+dur+0.02); }
     function kick(t){ if(!ctx) return; const o=ctx.createOscillator(), g=ctx.createGain();
-      o.type='sine'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(50,t+0.12);
-      g.gain.setValueAtTime(0.35,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);
-      o.connect(g); g.connect(musicBus); o.start(t); o.stop(t+0.16); }
+      o.type='sine'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(48,t+0.12);
+      g.gain.setValueAtTime(0.34,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.15);
+      o.connect(g); g.connect(musicBus); o.start(t); o.stop(t+0.17); }
+    function snare(t){ noise(t,0.13,0.13,musicBus); }
+    function hat(t){ noise(t,0.035,0.045,musicBus); }
+
     function schedule(){
-      if(!running||!ctx) return;
+      if(!running||!ctx||!track) return;
+      const stepDur=60/track.bpm/2;
       while(nextTime < ctx.currentTime+0.12){
-        const s=step;
-        const m=MEL[s%MEL.length]; if(m) blip(freq(m),nextTime,0.13,'square',0.16,musicBus);
-        if(s%2===0){ const b=BASS[(s/2)%BASS.length]; if(b) blip(freq(b),nextTime,0.22,'triangle',0.26,musicBus); }
-        if(s%2===0) noise(nextTime,0.03,0.05,musicBus);
-        if(s%8===0) kick(nextTime);
-        nextTime+=0.213; step=(s+1)%MEL.length;
+        const s=step, n=track.melody.length;
+        const m=track.melody[s%n];
+        if(m) blip(freq(m),nextTime,stepDur*0.9,track.lead,track.leadVol,musicBus);
+        if(s%track.bassStep===0){ const b=track.bass[(Math.floor(s/track.bassStep))%track.bass.length];
+          if(b) blip(freq(b),nextTime,stepDur*1.7,track.bassW,track.bassVol,musicBus); }
+        if(s%track.kick===0) kick(nextTime);
+        if(s%track.snare===track.snareOff) snare(nextTime);
+        if(s%track.hat===0) hat(nextTime);
+        nextTime+=stepDur; step=(s+1)%n;
       }
       timer=setTimeout(schedule,25);
     }
     return {
       init:init,
+      setTrack(name){ track=TRACKS[name]||TRACKS.meadow; },
       startMusic(){ if(!ctx) init(); if(!ctx) return; if(ctx.state==='suspended') ctx.resume();
-        if(running) return; running=true; nextTime=ctx.currentTime+0.06; schedule(); },
+        if(!track) track=TRACKS.meadow;
+        running=true; step=0; nextTime=ctx.currentTime+0.08;
+        if(timer) clearTimeout(timer); schedule(); },
       stopMusic(){ running=false; if(timer) clearTimeout(timer); timer=null; },
       toggle(){ on=!on; if(master) master.gain.value=on?0.5:0; if(on){ if(!ctx) init(); if(ctx&&ctx.state==='suspended') ctx.resume(); } return on; },
       isOn(){ return on; },
@@ -680,6 +728,7 @@ rollName();
     player={x:cur.start.x,y:cur.start.y,w:32,h:44,vx:0,vy:0,onGround:false};
     cam.x=0; cam.y=0; elapsed=0; coinsGot=0; flagSlide=0; flash=0; popups.length=0;
     document.getElementById('hudLevel').textContent='🍄 Level '+(i+1);
+    Audio.setTrack(cur.theme);
     updateHUD(); }
   function updateHUD(){ document.getElementById('hudCoins').textContent='🪙 '+coinsTotal;
     document.getElementById('hudLives').textContent='❤️'.repeat(Math.max(0,lives)); }
@@ -871,9 +920,9 @@ rollName();
 
   /* ================= FLOW ================= */
   const hideAll=()=>['gameStart','levelClear','gameOver','allClear'].forEach(id=>document.getElementById(id).classList.remove('show'));
-  function startRun(){ Audio.init(); Audio.startMusic();
+  function startRun(){ Audio.init();
     lives=3; score=0; coinsTotal=0; updateHUD();
-    loadLevel(0); state='playing'; hideAll(); canvas.focus(); }
+    loadLevel(0); state='playing'; hideAll(); Audio.startMusic(); canvas.focus(); }
   function nextLevel(){ loadLevel(index+1); state='playing'; hideAll(); Audio.startMusic(); canvas.focus(); }
   function retryLevel(){ lives=3; updateHUD(); loadLevel(index); state='playing'; hideAll(); Audio.startMusic(); canvas.focus(); }
   function restartLevel(){ lives=3; updateHUD(); loadLevel(index); state='playing'; hideAll(); Audio.startMusic(); }
